@@ -291,41 +291,17 @@
             display: none;
         }
 
-        .exchange-summary {
-            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
-            border: 2px solid #ff9800;
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .exchange-summary.show {
-            display: block;
-            animation: slideIn 0.5s ease;
-        }
-
-        .exchange-summary h4 {
-            color: #f57c00;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
-        }
-
-        .exchange-item {
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 5px;
             margin: 10px 0;
-            color: #5d4037;
-            font-size: 1.1rem;
-        }
-
-        .exchange-total {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #f57c00;
-            text-align: center;
-            margin-top: 15px;
-            padding: 15px;
-            background: rgba(255, 152, 0, 0.1);
-            border-radius: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
         }
     </style>
 </head>
@@ -463,6 +439,8 @@
                 <div id="errorMessage" class="error-message">
                     ❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง
                 </div>
+
+                <div id="debugInfo" class="debug-info"></div>
             </div>
             
             <!-- Exchange Tab -->
@@ -592,8 +570,10 @@
                 </div>
 
                 <div id="exchangeErrorMessage" class="error-message">
-                    ❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง
+                    ❌ เกิดข้อผิดพลาดในการบันทึกข้อมุล กรุณาลองใหม่อีกครั้ง
                 </div>
+
+                <div id="exchangeDebugInfo" class="debug-info"></div>
             </div>
         </div>
     </div>
@@ -602,7 +582,7 @@
         let currentCalculation = null;
         let currentExchangeCalculation = null;
         
-        // Google Apps Script URL - แทนที่ด้วย URL ที่ได้จากการ Deploy
+        // Google Apps Script URL
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHHpkupxUduvyTFUqBnnMhg3-uef8Qjp-MxbR0Q4iNBEyhKjD6B0Pv7VEckAGzAaw3/exec';
         
         function switchTab(tabName) {
@@ -928,6 +908,14 @@
         document.getElementById('exchangeCustomerName').addEventListener('input', checkExchangeSaveButtonStatus);
         document.getElementById('exchangeCustomerPhone').addEventListener('input', checkExchangeSaveButtonStatus);
         
+        function showDebugInfo(message, isExchange = false) {
+            const debugElement = document.getElementById(isExchange ? 'exchangeDebugInfo' : 'debugInfo');
+            const timestamp = new Date().toLocaleString('th-TH');
+            debugElement.innerHTML += `[${timestamp}] ${message}<br>`;
+            debugElement.style.display = 'block';
+            debugElement.scrollTop = debugElement.scrollHeight;
+        }
+        
         function saveToGoogleSheets() {
             const customerName = document.getElementById('customerName').value.trim();
             const customerPhone = document.getElementById('customerPhone').value.trim();
@@ -951,7 +939,7 @@
             
             // Prepare data for Google Sheets
             const data = {
-                timestamp: new Date().toLocaleString('th-TH'),
+                timestamp: new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' }),
                 transactionType: currentCalculation.type,
                 branch: currentCalculation.branch,
                 customerName: customerName,
@@ -970,8 +958,11 @@
                 calculationDetails: currentCalculation.calculationSteps.join(' | ')
             };
             
-            // Call save function
-            saveDataToGoogleSheets(data, saveBtn, originalText, 'successMessage', 'errorMessage');
+            showDebugInfo('เริ่มการส่งข้อมูลไป Google Sheets...');
+            showDebugInfo('ข้อมูลที่จะส่ง: ' + JSON.stringify(data, null, 2));
+            
+            // Call save function with improved error handling
+            saveDataToGoogleSheets(data, saveBtn, originalText, 'successMessage', 'errorMessage', false);
         }
 
         function saveExchangeToGoogleSheets() {
@@ -997,7 +988,7 @@
             
             // Prepare data for Google Sheets
             const data = {
-                timestamp: new Date().toLocaleString('th-TH'),
+                timestamp: new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' }),
                 transactionType: currentExchangeCalculation.type,
                 branch: currentExchangeCalculation.branch,
                 customerName: customerName,
@@ -1016,76 +1007,134 @@
                 calculationDetails: currentExchangeCalculation.calculationSteps.join(' | ')
             };
             
-            // Call save function
-            saveDataToGoogleSheets(data, saveBtn, originalText, 'exchangeSuccessMessage', 'exchangeErrorMessage');
+            showDebugInfo('เริ่มการส่งข้อมูลการเปลี่ยนไป Google Sheets...', true);
+            showDebugInfo('ข้อมูลที่จะส่ง: ' + JSON.stringify(data, null, 2), true);
+            
+            // Call save function with improved error handling
+            saveDataToGoogleSheets(data, saveBtn, originalText, 'exchangeSuccessMessage', 'exchangeErrorMessage', true);
         }
 
-        function saveDataToGoogleSheets(data, saveBtn, originalText, successMessageId, errorMessageId) {
-            // Check if Google Apps Script URL is configured
-            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE' || GOOGLE_SCRIPT_URL.trim() === '') {
-                // Show configuration instructions
-                setTimeout(() => {
-                    document.getElementById(errorMessageId).innerHTML = 
-                        `⚠️ กรุณาตั้งค่า Google Apps Script URL<br>
-                        <small>📋 วิธีตั้งค่า:<br>
-                        1. สร้าง Google Apps Script ใหม่<br>
-                        2. Deploy เป็น Web app<br>
-                        3. คัดลอก URL มาใส่ในโค้ด HTML<br>
-                        4. แทนที่ 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'</small>`;
-                    document.getElementById(errorMessageId).style.display = 'block';
+        async function saveDataToGoogleSheets(data, saveBtn, originalText, successMessageId, errorMessageId, isExchange) {
+            try {
+                showDebugInfo(`ส่งข้อมูลไปยัง: ${GOOGLE_SCRIPT_URL}`, isExchange);
+                
+                // Test with fetch (cors mode to get proper response)
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                    // Remove mode: 'no-cors' to get proper response
+                });
+
+                showDebugInfo(`Response status: ${response.status}`, isExchange);
+                showDebugInfo(`Response ok: ${response.ok}`, isExchange);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.text();
+                showDebugInfo(`Response text: ${result}`, isExchange);
+
+                // Try to parse as JSON
+                let parsedResult;
+                try {
+                    parsedResult = JSON.parse(result);
+                    showDebugInfo(`Parsed result: ${JSON.stringify(parsedResult)}`, isExchange);
+                } catch (e) {
+                    showDebugInfo(`Failed to parse JSON: ${e.message}`, isExchange);
+                    // If not JSON, treat as success if we got any response
+                    parsedResult = { status: 'success', message: result };
+                }
+
+                if (parsedResult.status === 'success') {
+                    // Show success message
+                    document.getElementById(successMessageId).style.display = 'block';
+                    showDebugInfo('✅ บันทึกข้อมูลสำเร็จ!', isExchange);
                     
-                    saveBtn.innerHTML = originalText;
-                    saveBtn.disabled = false;
+                    // Reset form based on transaction type
+                    if (isExchange) {
+                        document.getElementById('exchangeCustomerName').value = '';
+                        document.getElementById('exchangeCustomerPhone').value = '';
+                    } else {
+                        document.getElementById('customerName').value = '';
+                        document.getElementById('customerPhone').value = '';
+                    }
+                    
+                    // Hide success message after 3 seconds
+                    setTimeout(() => {
+                        document.getElementById(successMessageId).style.display = 'none';
+                    }, 3000);
+                    
+                } else {
+                    throw new Error(parsedResult.message || 'Unknown error from server');
+                }
+
+            } catch (error) {
+                console.error('Error details:', error);
+                showDebugInfo(`❌ เกิดข้อผิดพลาด: ${error.message}`, isExchange);
+                
+                // Try fallback method with no-cors mode
+                showDebugInfo('พยายามส่งข้อมูลด้วยวิธี no-cors fallback...', isExchange);
+                try {
+                    await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    showDebugInfo('✅ ส่งข้อมูลด้วยวิธี no-cors สำเร็จ (ไม่สามารถยืนยันได้)', isExchange);
+                    
+                    // Show success message for no-cors fallback
+                    document.getElementById(successMessageId).innerHTML = 
+                        '✅ ส่งข้อมูลแล้ว (กรุณาตรวจสอบใน Google Sheets)';
+                    document.getElementById(successMessageId).style.display = 'block';
+                    
+                    // Reset form
+                    if (isExchange) {
+                        document.getElementById('exchangeCustomerName').value = '';
+                        document.getElementById('exchangeCustomerPhone').value = '';
+                    } else {
+                        document.getElementById('customerName').value = '';
+                        document.getElementById('customerPhone').value = '';
+                    }
+                    
+                    setTimeout(() => {
+                        document.getElementById(successMessageId).style.display = 'none';
+                    }, 5000);
+                    
+                } catch (fallbackError) {
+                    showDebugInfo(`❌ Fallback method ก็ล้มเหลว: ${fallbackError.message}`, isExchange);
+                    
+                    document.getElementById(errorMessageId).innerHTML = 
+                        `❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล<br>
+                        <small>กรุณาตรวจสอบ:<br>
+                        • Google Apps Script URL ถูกต้องหรือไม่<br>
+                        • Google Apps Script ได้รับ Permission แล้วหรือไม่<br>
+                        • การตั้งค่า Deploy เป็น "Anyone" หรือไม่</small>`;
+                    document.getElementById(errorMessageId).style.display = 'block';
                     
                     setTimeout(() => {
                         document.getElementById(errorMessageId).style.display = 'none';
-                    }, 5000);
-                }, 1000);
-                return;
-            }
-            
-            // Actual API call to Google Apps Script
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            })
-            .then(() => {
-                // Show success message
-                document.getElementById(successMessageId).style.display = 'block';
-                
-                // Reset form based on transaction type
-                if (data.transactionType === 'รับซื้อคืน') {
-                    document.getElementById('customerName').value = '';
-                    document.getElementById('customerPhone').value = '';
-                } else {
-                    document.getElementById('exchangeCustomerName').value = '';
-                    document.getElementById('exchangeCustomerPhone').value = '';
+                    }, 8000);
                 }
-                
+            } finally {
+                // Restore button
                 saveBtn.innerHTML = originalText;
-                saveBtn.disabled = true;
+                saveBtn.disabled = true; // Keep disabled until next calculation
                 
-                // Hide success message after 3 seconds
-                setTimeout(() => {
-                    document.getElementById(successMessageId).style.display = 'none';
-                }, 3000);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById(errorMessageId).style.display = 'block';
-                
-                saveBtn.innerHTML = originalText;
-                saveBtn.disabled = false;
-                
-                // Hide error message after 3 seconds
-                setTimeout(() => {
-                    document.getElementById(errorMessageId).style.display = 'none';
-                }, 3000);
-            });
+                // Check save button status again
+                if (isExchange) {
+                    checkExchangeSaveButtonStatus();
+                } else {
+                    checkSaveButtonStatus();
+                }
+            }
         }
     </script>
 </body>
