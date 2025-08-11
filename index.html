@@ -1055,13 +1055,10 @@
             .then(response => response.json())
             .then(result => {
                 console.log(result);
-            })
-            .catch(error => console.error(error));
-            .then(() => {
-                // Show success message
+            
+                // ✅ ถ้าสำเร็จ
                 document.getElementById(successMessageId).style.display = 'block';
-                
-                // Reset form based on transaction type
+            
                 if (data.transactionType === 'รับซื้อคืน') {
                     document.getElementById('customerName').value = '';
                     document.getElementById('customerPhone').value = '';
@@ -1069,23 +1066,22 @@
                     document.getElementById('exchangeCustomerName').value = '';
                     document.getElementById('exchangeCustomerPhone').value = '';
                 }
-                
+            
                 saveBtn.innerHTML = originalText;
                 saveBtn.disabled = true;
-                
-                // Hide success message after 3 seconds
+            
                 setTimeout(() => {
                     document.getElementById(successMessageId).style.display = 'none';
                 }, 3000);
             })
             .catch(error => {
+                // ❌ ถ้าผิดพลาด
                 console.error('Error:', error);
                 document.getElementById(errorMessageId).style.display = 'block';
-                
+            
                 saveBtn.innerHTML = originalText;
                 saveBtn.disabled = false;
-                
-                // Hide error message after 3 seconds
+            
                 setTimeout(() => {
                     document.getElementById(errorMessageId).style.display = 'none';
                 }, 3000);
