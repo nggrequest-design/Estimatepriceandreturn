@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NGG Jewelry Price Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ffd700, #ffb347);
+            color: #333;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.3)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.3)"/><circle cx="40" cy="70" r="1" fill="rgba(255,255,255,0.3)"/></svg>');
+            opacity: 0.7;
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 5px;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+        
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .calculate-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.3);
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin: 10px 0;
+        }
+        
+        .save-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 123, 255, 0.3);
+        }
+
+        .save-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            background: linear-gradient(135deg, #e8f5e8, #f0fff4);
+            border: 2px solid #28a745;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .result h3 {
+            color: #28a745;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .calculation-details {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .calculation-step {
+            margin: 8px 0;
+            color: #666;
+        }
+        
+        .final-price {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #28a745;
+            text-align: center;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(40, 167, 69, 0.1);
+            border-radius: 10px;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            color: #856404;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .info-box h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+        
+        .info-box ul {
+            margin-left: 20px;
+        }
+        
+        .info-box li {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border: 2px solid #28a745;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            color: #155724;
+            display: none;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border: 2px solid #dc3545;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            color: #721c24;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💎 NGG Jewelry Calculator</h1>
+            <p>โปรแกรมประเมินราคารับซื้อคืนและเปลี่ยนสินค้า</p>
+        </div>
+        
+        <div class="content">
+            <div class="tabs">
+                <button class="tab-button active" onclick="switchTab('buyback')">รับซื้อคืนสินค้า</button>
+                <button class="tab-button" onclick="switchTab('exchange')">เปลี่ยนสินค้า</button>
+            </div>
+            
+            <!-- Buyback Tab -->
+            <div id="buyback" class="tab-content active">
+                <div class="info-box">
+                    <h4>📋 เงื่อนไขการรับซื้อคืน</h4>
+                    <ul>
+                        <li><strong>Jewelry < 20,000 บาท:</strong> หัก 50%</li>
+                        <li><strong>Jewelry ≥ 20,000 บาท:</strong> หัก 30%</li>
+                        <li><strong>ทอง K (ไม่มีใบรับประกัน):</strong> 1,300 บาท/กรัม</li>
+                        <li><strong>ทอง K (มีใบรับประกัน):</strong> 1,500 บาท/กรัม</li>
+                    </ul>
+                </div>
+
+                <!-- Branch Selection -->
+                <div class="form-group">
+                    <label>🏢 เลือกสาขา</label>
+                    <select id="branch" required>
+                        <option value="">-- เลือกสาขา --</option>
+                        <option value="Central Ayutthaya">Central Ayutthaya</option>
+                        <option value="Central Sriracha">Central Sriracha</option>
+                        <option value="Future Park Rangsit">Future Park Rangsit</option>
+                        <option value="Central Chiangmai">Central Chiangmai</option>
+                        <option value="Central World">Central World</option>
+                        <option value="Central World Kiosk">Central World Kiosk</option>
+                        <option value="Jungceylon">Jungceylon</option>
+                        <option value="Central Rama 2">Central Rama 2</option>
+                        <option value="Central Nakhon Sawan">Central Nakhon Sawan</option>
+                        <option value="Central Nakhon Pathom">Central Nakhon Pathom</option>
+                        <option value="Central Phuket">Central Phuket</option>
+                        <option value="Central Pattaya">Central Pattaya</option>
+                        <option value="Central Rama 9">Central Rama 9</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ประเภทสินค้า</label>
+                        <select id="productType" onchange="toggleProductOptions()">
+                            <option value="diamond">Jewelry</option>
+                            <option value="gold">ทอง K</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Diamond/Gem Options -->
+                <div id="diamondOptions">
+                    <div class="form-group">
+                        <label>ราคาสินค้าตอนซื้อ (บาท)</label>
+                        <input type="number" id="originalPrice" placeholder="กรอกราคาสินค้า">
+                    </div>
+                </div>
+                
+                <!-- Gold Options -->
+                <div id="goldOptions" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>น้ำหนักทอง (กรัม)</label>
+                            <input type="number" id="goldWeight" placeholder="กรอกน้ำหนัก" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>สถานะใบรับประกัน</label>
+                            <select id="goldWarranty">
+                                <option value="with">มีใบรับประกัน NGG</option>
+                                <option value="without">ไม่มีใบรับประกัน</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>สภาพสินค้า</label>
+                        <select id="condition">
+                            <option value="A">เกรด A (95% ขึ้นไป)</option>
+                            <option value="B">เกรด B (70.1% - 94.9%)</option>
+                            <option value="C">เกรด C (ต่ำกว่า 70%)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>มีใบรับประกัน NGG หรือไม่</label>
+                        <select id="warranty">
+                            <option value="yes">มี</option>
+                            <option value="no">ไม่มี</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Customer Information -->
+                <div class="info-box">
+                    <h4>👤 ข้อมูลลูกค้า (สำหรับบันทึก)</h4>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ชื่อลูกค้า</label>
+                        <input type="text" id="customerName" placeholder="กรอกชื่อลูกค้า">
+                    </div>
+                    <div class="form-group">
+                        <label>เบอร์โทรศัพท์</label>
+                        <input type="tel" id="customerPhone" placeholder="กรอกเบอร์โทรศัพท์">
+                    </div>
+                </div>
+                
+                <button class="calculate-btn" onclick="calculatePrice()">คำนวณราคา</button>
+                
+                <div id="result" class="result">
+                    <h3>💰 ผลการคำนวณ</h3>
+                    <div id="calculationDetails" class="calculation-details">
+                        <div id="calculationSteps"></div>
+                        <div id="finalPrice" class="final-price"></div>
+                    </div>
+                    <button class="save-btn" id="saveBtn" onclick="saveToGoogleSheets()" disabled>
+                        💾 บันทึกข้อมูลลง Google Sheets
+                    </button>
+                </div>
+
+                <div id="successMessage" class="success-message">
+                    ✅ บันทึกข้อมูลสำเร็จแล้ว!
+                </div>
+
+                <div id="errorMessage" class="error-message">
+                    ❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง
+                </div>
+            </div>
+            
+            <!-- Exchange Tab -->
+            <div id="exchange" class="tab-content">
+                <div class="info-box">
+                    <h4>🔄 เงื่อนไขการเปลี่ยนสินค้า</h4>
+                    <ul>
+                        <li>สินค้าเดิมจะถูกประเมินตามเงื่อนไขการรับซื้อคืน</li>
+                        <li>ลูกค้าต้องเสียค่าแปรรูปใหม่ 500 บาท/ชิ้น</li>
+                        <li>หากสินค้าใหม่มีราคาสูงกว่า ต้องเสียเงินส่วนต่าง</li>
+                        <li>หากสินค้าใหม่มีราคาต่ำกว่า จะได้รับเงินคืนส่วนต่าง</li>
+                    </ul>
+                </div>
+
+                <!-- Branch Selection for Exchange -->
+                <div class="form-group">
+                    <label>🏢 เลือกสาขา</label>
+                    <select id="exchangeBranch" required>
+                        <option value="">-- เลือกสาขา --</option>
+                        <option value="Central Ayutthaya">Central Ayutthaya</option>
+                        <option value="Central Sriracha">Central Sriracha</option>
+                        <option value="Future Park Rangsit">Future Park Rangsit</option>
+                        <option value="Central Chiangmai">Central Chiangmai</option>
+                        <option value="Central World">Central World</option>
+                        <option value="Central World Kiosk">Central World Kiosk</option>
+                        <option value="Jungceylon">Jungceylon</option>
+                        <option value="Central Rama 2">Central Rama 2</option>
+                        <option value="Central Nakhon Sawan">Central Nakhon Sawan</option>
+                        <option value="Central Nakhon Pathom">Central Nakhon Pathom</option>
+                        <option value="Central Phuket">Central Phuket</option>
+                        <option value="Central Pattaya">Central Pattaya</option>
+                        <option value="Central Rama 9">Central Rama 9</option>
+                    </select>
+                </div>
+
+                <!-- Old Product Section -->
+                <div class="info-box">
+                    <h4>📦 สินค้าเดิมที่ต้องการเปลี่ยน</h4>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ประเภทสินค้าเดิม</label>
+                        <select id="oldProductType" onchange="toggleOldProductOptions()">
+                            <option value="diamond">Jewelry</option>
+                            <option value="gold">ทอง K</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Old Diamond/Gem Options -->
+                <div id="oldDiamondOptions">
+                    <div class="form-group">
+                        <label>ราคาสินค้าเดิมตอนซื้อ (บาท)</label>
+                        <input type="number" id="oldOriginalPrice" placeholder="กรอกราคาสินค้าเดิม">
+                    </div>
+                </div>
+
+                <!-- Old Gold Options -->
+                <div id="oldGoldOptions" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>น้ำหนักทองเดิม (กรัม)</label>
+                            <input type="number" id="oldGoldWeight" placeholder="กรอกน้ำหนักเดิม" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>สถานะใบรับประกันทองเดิม</label>
+                            <select id="oldGoldWarranty">
+                                <option value="with">มีใบรับประกัน NGG</option>
+                                <option value="without">ไม่มีใบรับประกัน</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>สภาพสินค้าเดิม</label>
+                        <select id="oldCondition">
+                            <option value="A">เกรด A (95% ขึ้นไป)</option>
+                            <option value="B">เกรด B (70.1% - 94.9%)</option>
+                            <option value="C">เกรด C (ต่ำกว่า 70%)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>มีใบรับประกัน NGG สินค้าเดิม</label>
+                        <select id="oldWarranty">
+                            <option value="yes">มี</option>
+                            <option value="no">ไม่มี</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- New Product Section -->
+                <div class="info-box">
+                    <h4>✨ สินค้าใหม่ที่ต้องการเปลี่ยน</h4>
+                </div>
+
+                <div class="form-group">
+                    <label>ราคาสินค้าใหม่ (บาท)</label>
+                    <input type="number" id="newProductPrice" placeholder="กรอกราคาสินค้าใหม่">
+                </div>
+
+                <!-- Customer Information for Exchange -->
+                <div class="info-box">
+                    <h4>👤 ข้อมูลลูกค้า</h4>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ชื่อลูกค้า</label>
+                        <input type="text" id="exchangeCustomerName" placeholder="กรอกชื่อลูกค้า">
+                    </div>
+                    <div class="form-group">
+                        <label>เบอร์โทรศัพท์</label>
+                        <input type="tel" id="exchangeCustomerPhone" placeholder="กรอกเบอร์โทรศัพท์">
+                    </div>
+                </div>
+
+                <button class="calculate-btn" onclick="calculateExchange()">คำนวณการเปลี่ยนสินค้า</button>
+
+                <div id="exchangeResult" class="result">
+                    <h3>🔄 ผลการคำนวณการเปลี่ยนสินค้า</h3>
+                    <div id="exchangeCalculationDetails" class="calculation-details">
+                        <div id="exchangeCalculationSteps"></div>
+                        <div id="exchangeFinalResult" class="final-price"></div>
+                    </div>
+                    <button class="save-btn" id="exchangeSaveBtn" onclick="saveExchangeToGoogleSheets()" disabled>
+                        💾 บันทึกข้อมูลการเปลี่ยนสินค้า
+                    </button>
+                </div>
+
+                <div id="exchangeSuccessMessage" class="success-message">
+                    ✅ บันทึกข้อมูลการเปลี่ยนสินค้าสำเร็จแล้ว!
+                </div>
+
+                <div id="exchangeErrorMessage" class="error-message">
+                    ❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentCalculation = null;
+        let currentExchangeCalculation = null;
+        
+        // Google Apps Script URL - แทนที่ด้วย URL ที่ได้จากการ Deploy
+        // ตัวอย่าง: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec'
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHHpkupxUduvyTFUqBnnMhg3-uef8Qjp-MxbR0Q4iNBEyhKjD6B0Pv7VEckAGzAaw3/exec';
+        
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+        
+        function toggleProductOptions() {
+            const productType = document.getElementById('productType').value;
+            const diamondOptions = document.getElementById('diamondOptions');
+            const goldOptions = document.getElementById('goldOptions');
+            
+            if (productType === 'gold') {
+                diamondOptions.style.display = 'none';
+                goldOptions.style.display = 'block';
+            } else {
+                diamondOptions.style.display = 'block';
+                goldOptions.style.display = 'none';
+            }
+        }
+        
+        function calculatePrice() {
+            const branch = document.getElementById('branch').value;
+            const productType = document.getElementById('productType').value;
+            const condition = document.getElementById('condition').value;
+            const warranty = document.getElementById('warranty').value;
+            
+            // Validate branch selection
+            if (!branch) {
+                alert('กรุณาเลือกสาขาก่อน');
+                return;
+            }
+            
+            let basePrice = 0;
+            let calculationSteps = [];
+            
+            if (productType === 'diamond') {
+                const originalPrice = parseFloat(document.getElementById('originalPrice').value);
+                
+                if (!originalPrice || originalPrice <= 0) {
+                    alert('กรุณากรอกราคาสินค้าที่ถูกต้อง');
+                    return;
+                }
+                
+                // Calculate based on price range
+                let discountRate;
+                if (originalPrice < 20000) {
+                    discountRate = 0.5; // หัก 50%
+                    calculationSteps.push(`ราคาต้นทุน: ${originalPrice.toLocaleString()} บาท`);
+                    calculationSteps.push(`สินค้าราคาต่ำกว่า 20,000 บาท - หัก 50%`);
+                } else {
+                    discountRate = 0.3; // หัก 30%
+                    calculationSteps.push(`ราคาต้นทุน: ${originalPrice.toLocaleString()} บาท`);
+                    calculationSteps.push(`สินค้าราคา 20,000 บาทขึ้นไป - หัก 30%`);
+                }
+                
+                basePrice = originalPrice * (1 - discountRate);
+                calculationSteps.push(`ราคาหลังหักส่วนลด: ${basePrice.toLocaleString()} บาท`);
+                
+            } else if (productType === 'gold') {
+                const goldWeight = parseFloat(document.getElementById('goldWeight').value);
+                const goldWarranty = document.getElementById('goldWarranty').value;
+                
+                if (!goldWeight || goldWeight <= 0) {
+                    alert('กรุณากรอกน้ำหนักทองที่ถูกต้อง');
+                    return;
+                }
+                
+                const pricePerGram = goldWarranty === 'with' ? 1500 : 1300;
+                basePrice = goldWeight * pricePerGram;
+                
+                calculationSteps.push(`น้ำหนักทอง: ${goldWeight} กรัม`);
+                calculationSteps.push(`ราคาต่อกรัม: ${pricePerGram.toLocaleString()} บาท (${goldWarranty === 'with' ? 'มี' : 'ไม่มี'}ใบรับประกัน)`);
+                calculationSteps.push(`ราคาฐาน: ${goldWeight} × ${pricePerGram.toLocaleString()} = ${basePrice.toLocaleString()} บาท`);
+            }
+            
+            // Apply condition adjustments
+            let conditionMultiplier;
+            switch (condition) {
+                case 'A':
+                    conditionMultiplier = 0.95;
+                    calculationSteps.push(`สภาพสินค้าเกรด A (95%)`);
+                    break;
+                case 'B':
+                    conditionMultiplier = 0.825; // Average of 70.1% and 94.9%
+                    calculationSteps.push(`สภาพสินค้าเกรด B (82.5%)`);
+                    break;
+                case 'C':
+                    conditionMultiplier = 0.7;
+                    calculationSteps.push(`สภาพสินค้าเกรด C (70%)`);
+                    break;
+            }
+            
+            let finalPrice = basePrice * conditionMultiplier;
+            calculationSteps.push(`ราคาหลังปรับตามสภาพ: ${basePrice.toLocaleString()} × ${(conditionMultiplier * 100)}% = ${finalPrice.toLocaleString()} บาท`);
+            
+            // Warranty bonus for jewelry (not applicable to gold K)
+            if (productType === 'diamond' && warranty === 'yes') {
+                finalPrice = finalPrice * 1.05; // 5% bonus
+                calculationSteps.push(`โบนัสใบรับประกัน NGG (+5%): ${finalPrice.toLocaleString()} บาท`);
+            }
+            
+            // Store calculation data
+            currentCalculation = {
+                branch: branch,
+                productType: productType === 'diamond' ? 'Jewelry' : 'ทอง K',
+                originalPrice: productType === 'diamond' ? parseFloat(document.getElementById('originalPrice').value) : null,
+                goldWeight: productType === 'gold' ? parseFloat(document.getElementById('goldWeight').value) : null,
+                goldWarranty: productType === 'gold' ? document.getElementById('goldWarranty').value : null,
+                condition: condition,
+                warranty: warranty,
+                finalPrice: Math.round(finalPrice),
+                calculationSteps: calculationSteps
+            };
+            
+            // Display results
+            document.getElementById('calculationSteps').innerHTML = 
+                calculationSteps.map(step => `<div class="calculation-step">${step}</div>`).join('');
+            document.getElementById('finalPrice').innerHTML = 
+                `ราคารับซื้อคืนสุดท้าย: <strong>${Math.round(finalPrice).toLocaleString()} บาท</strong>`;
+            
+            document.getElementById('result').classList.add('show');
+            
+            // Enable save button if customer info is filled
+            checkSaveButtonStatus();
+        }
+        
+        function checkSaveButtonStatus() {
+            const customerName = document.getElementById('customerName').value.trim();
+            const customerPhone = document.getElementById('customerPhone').value.trim();
+            const saveBtn = document.getElementById('saveBtn');
+            
+            if (customerName && customerPhone && currentCalculation) {
+                saveBtn.disabled = false;
+            } else {
+                saveBtn.disabled = true;
+            }
+        }
+        
+        // Add event listeners to customer info fields
+        document.getElementById('customerName').addEventListener('input', checkSaveButtonStatus);
+        document.getElementById('customerPhone').addEventListener('input', checkSaveButtonStatus);
+        
+        function saveToGoogleSheets() {
+            const customerName = document.getElementById('customerName').value.trim();
+            const customerPhone = document.getElementById('customerPhone').value.trim();
+            
+            if (!customerName || !customerPhone) {
+                alert('กรุณากรอกข้อมูลลูกค้าให้ครบ');
+                return;
+            }
+            
+            if (!currentCalculation) {
+                alert('กรุณาคำนวณราคาก่อนบันทึก');
+                return;
+            }
+            
+            const saveBtn = document.getElementById('saveBtn');
+            const originalText = saveBtn.innerHTML;
+            
+            // Show loading
+            saveBtn.innerHTML = '⏳ กำลังบันทึก...';
+            saveBtn.disabled = true;
+            
+            // Prepare data for Google Sheets
+            const data = {
+                timestamp: new Date().toLocaleString('th-TH'),
+                branch: currentCalculation.branch,
+                customerName: customerName,
+                customerPhone: customerPhone,
+                productType: currentCalculation.productType,
+                originalPrice: currentCalculation.originalPrice || '',
+                goldWeight: currentCalculation.goldWeight || '',
+                goldWarranty: currentCalculation.goldWarranty === 'with' ? 'มีใบรับประกัน' : (currentCalculation.goldWarranty === 'without' ? 'ไม่มีใบรับประกัน' : ''),
+                condition: currentCalculation.condition,
+                warranty: currentCalculation.warranty === 'yes' ? 'มี' : 'ไม่มี',
+                finalPrice: currentCalculation.finalPrice,
+                calculationDetails: currentCalculation.calculationSteps.join(' | ')
+            };
+            
+            // Check if Google Apps Script URL is configured
+            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE' || GOOGLE_SCRIPT_URL.trim() === '') {
+                // Show configuration instructions
+                setTimeout(() => {
+                    document.getElementById('errorMessage').innerHTML = 
+                        `⚠️ กรุณาตั้งค่า Google Apps Script URL<br>
+                        <small>📋 วิธีตั้งค่า:<br>
+                        1. สร้าง Google Apps Script ใหม่<br>
+                        2. Deploy เป็น Web app<br>
+                        3. คัดลอก URL มาใส่ในโค้ด HTML<br>
+                        4. แทนที่ 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'</small>`;
+                    document.getElementById('errorMessage').style.display = 'block';
+                    
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.disabled = false;
+                    
+                    setTimeout(() => {
+                        document.getElementById('errorMessage').style.display = 'none';
+                    }, 5000);
+                }, 1000);
+                return;
+            }
+            
+            // Actual API call to Google Apps Script
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                // Show success message
+                document.getElementById('successMessage').style.display = 'block';
+                
+                // Reset form
+                document.getElementById('customerName').value = '';
+                document.getElementById('customerPhone').value = '';
+                
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = true;
+                
+                // Hide success message after 3 seconds
+                setTimeout(() => {
+                    document.getElementById('successMessage').style.display = 'none';
+                }, 3000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('errorMessage').style.display = 'block';
+                
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+                
+                // Hide error message after 3 seconds
+                setTimeout(() => {
+                    document.getElementById('errorMessage').style.display = 'none';
+        function toggleOldProductOptions() {
+            const productType = document.getElementById('oldProductType').value;
+            const oldDiamondOptions = document.getElementById('oldDiamondOptions');
+            const oldGoldOptions = document.getElementById('oldGoldOptions');
+            
+            if (productType === 'gold') {
+                oldDiamondOptions.style.display = 'none';
+                oldGoldOptions.style.display = 'block';
+            } else {
+                oldDiamondOptions.style.display = 'block';
+                oldGoldOptions.style.display = 'none';
+            }
+        }
+
+        function calculateOldProductValue(productType, originalPrice, goldWeight, goldWarranty, condition, warranty) {
+            let basePrice = 0;
+            let calculationSteps = [];
+            
+            if (productType === 'diamond') {
+                if (!originalPrice || originalPrice <= 0) {
+                    return null;
+                }
+                
+                let discountRate;
+                if (originalPrice < 20000) {
+                    discountRate = 0.5;
+                    calculationSteps.push(`ราคาต้นทุนสินค้าเดิม: ${originalPrice.toLocaleString()} บาท`);
+                    calculationSteps.push(`สินค้าราคาต่ำกว่า 20,000 บาท - หัก 50%`);
+                } else {
+                    discountRate = 0.3;
+                    calculationSteps.push(`ราคาต้นทุนสินค้าเดิม: ${originalPrice.toLocaleString()} บาท`);
+                    calculationSteps.push(`สินค้าราคา 20,000 บาทขึ้นไป - หัก 30%`);
+                }
+                
+                basePrice = originalPrice * (1 - discountRate);
+                calculationSteps.push(`ราคาหลังหักส่วนลด: ${basePrice.toLocaleString()} บาท`);
+                
+            } else if (productType === 'gold') {
+                if (!goldWeight || goldWeight <= 0) {
+                    return null;
+                }
+                
+                const pricePerGram = goldWarranty === 'with' ? 1500 : 1300;
+                basePrice = goldWeight * pricePerGram;
+                
+                calculationSteps.push(`น้ำหนักทองเดิม: ${goldWeight} กรัม`);
+                calculationSteps.push(`ราคาต่อกรัม: ${pricePerGram.toLocaleString()} บาท (${goldWarranty === 'with' ? 'มี' : 'ไม่มี'}ใบรับประกัน)`);
+                calculationSteps.push(`ราคาฐานสินค้าเดิม: ${goldWeight} × ${pricePerGram.toLocaleString()} = ${basePrice.toLocaleString()} บาท`);
+            }
+            
+            // Apply condition adjustments
+            let conditionMultiplier;
+            switch (condition) {
+                case 'A':
+                    conditionMultiplier = 0.95;
+                    calculationSteps.push(`สภาพสินค้าเดิมเกรด A (95%)`);
+                    break;
+                case 'B':
+                    conditionMultiplier = 0.825;
+                    calculationSteps.push(`สภาพสินค้าเดิมเกรด B (82.5%)`);
+                    break;
+                case 'C':
+                    conditionMultiplier = 0.7;
+                    calculationSteps.push(`สภาพสินค้าเดิมเกรด C (70%)`);
+                    break;
+            }
+            
+            let finalPrice = basePrice * conditionMultiplier;
+            calculationSteps.push(`ราคาหลังปรับตามสภาพ: ${basePrice.toLocaleString()} × ${(conditionMultiplier * 100)}% = ${finalPrice.toLocaleString()} บาท`);
+            
+            // Warranty bonus for jewelry
+            if (productType === 'diamond' && warranty === 'yes') {
+                finalPrice = finalPrice * 1.05;
+                calculationSteps.push(`โบนัสใบรับประกัน NGG (+5%): ${finalPrice.toLocaleString()} บาท`);
+            }
+            
+            return {
+                finalPrice: Math.round(finalPrice),
+                calculationSteps: calculationSteps
+            };
+        }
+
+        function calculateExchange() {
+            const branch = document.getElementById('exchangeBranch').value;
+            const oldProductType = document.getElementById('oldProductType').value;
+            const oldCondition = document.getElementById('oldCondition').value;
+            const oldWarranty = document.getElementById('oldWarranty').value;
+            const newProductPrice = parseFloat(document.getElementById('newProductPrice').value);
+            
+            // Validate inputs
+            if (!branch) {
+                alert('กรุณาเลือกสาขาก่อน');
+                return;
+            }
+            
+            if (!newProductPrice || newProductPrice <= 0) {
+                alert('กรุณากรอกราคาสินค้าใหม่ที่ถูกต้อง');
+                return;
+            }
+            
+            let oldProductValue = null;
+            
+            if (oldProductType === 'diamond') {
+                const oldOriginalPrice = parseFloat(document.getElementById('oldOriginalPrice').value);
+                oldProductValue = calculateOldProductValue(
+                    'diamond', oldOriginalPrice, null, null, oldCondition, oldWarranty
+                );
+            } else if (oldProductType === 'gold') {
+                const oldGoldWeight = parseFloat(document.getElementById('oldGoldWeight').value);
+                const oldGoldWarranty = document.getElementById('oldGoldWarranty').value;
+                oldProductValue = calculateOldProductValue(
+                    'gold', null, oldGoldWeight, oldGoldWarranty, oldCondition, oldWarranty
+                );
+            }
+            
+            if (!oldProductValue) {
+                alert('กรุณากรอกข้อมูลสินค้าเดิมให้ครบถ้วน');
+                return;
+            }
+            
+            // Calculate exchange
+            const processingFee = 500; // ค่าแปรรูป 500 บาท
+            const oldValue = oldProductValue.finalPrice;
+            const priceDifference = newProductPrice - oldValue;
+            const totalAmount = priceDifference + processingFee;
+            
+            let calculationSteps = [...oldProductValue.calculationSteps];
+            calculationSteps.push(`─────────────────────────────────`);
+            calculationSteps.push(`ราคาสินค้าใหม่: ${newProductPrice.toLocaleString()} บาท`);
+            calculationSteps.push(`มูลค่าสินค้าเดิม: ${oldValue.toLocaleString()} บาท`);
+            calculationSteps.push(`ส่วนต่างราคา: ${newProductPrice.toLocaleString()} - ${oldValue.toLocaleString()} = ${priceDifference.toLocaleString()} บาท`);
+            calculationSteps.push(`ค่าแปรรูป: ${processingFee.toLocaleString()} บาท`);
+            
+            let resultText = '';
+            let resultClass = '';
+            
+            if (totalAmount > 0) {
+                resultText = `ลูกค้าต้องเสียเพิ่ม: ${totalAmount.toLocaleString()} บาท`;
+                resultClass = 'final-price';
+                calculationSteps.push(`ยอดที่ลูกค้าต้องเสียเพิ่ม: ${priceDifference.toLocaleString()} + ${processingFee.toLocaleString()} = ${totalAmount.toLocaleString()} บาท`);
+            } else if (totalAmount < 0) {
+                const refund = Math.abs(totalAmount);
+                resultText = `ลูกค้าได้รับเงินคืน: ${refund.toLocaleString()} บาท`;
+                resultClass = 'final-price';
+                calculationSteps.push(`ยอดที่ลูกค้าได้รับคืน: ${Math.abs(priceDifference).toLocaleString()} - ${processingFee.toLocaleString()} = ${refund.toLocaleString()} บาท`);
+            } else {
+                resultText = `เสียเฉพาะค่าแปรรูป: ${processingFee.toLocaleString()} บาท`;
+                resultClass = 'final-price';
+                calculationSteps.push(`ราคาเท่ากัน - เสียเฉพาะค่าแปรรูป: ${processingFee.toLocaleString()} บาท`);
+            }
+            
+            // Store calculation data
+            currentExchangeCalculation = {
+                branch: branch,
+                oldProductType: oldProductType === 'diamond' ? 'Jewelry' : 'ทอง K',
+                oldOriginalPrice: oldProductType === 'diamond' ? parseFloat(document.getElementById('oldOriginalPrice').value) : null,
+                oldGoldWeight: oldProductType === 'gold' ? parseFloat(document.getElementById('oldGoldWeight').value) : null,
+                oldGoldWarranty: oldProductType === 'gold' ? document.getElementById('oldGoldWarranty').value : null,
+                oldCondition: oldCondition,
+                oldWarranty: oldWarranty,
+                oldProductValue: oldValue,
+                newProductPrice: newProductPrice,
+                priceDifference: priceDifference,
+                processingFee: processingFee,
+                totalAmount: totalAmount,
+                calculationSteps: calculationSteps
+            };
+            
+            // Display results
+            document.getElementById('exchangeCalculationSteps').innerHTML = 
+                calculationSteps.map(step => `<div class="calculation-step">${step}</div>`).join('');
+            document.getElementById('exchangeFinalResult').innerHTML = 
+                `<strong>${resultText}</strong>`;
+            
+            document.getElementById('exchangeResult').classList.add('show');
+            
+            // Enable save button if customer info is filled
+            checkExchangeSaveButtonStatus();
+        }
+
+        function checkExchangeSaveButtonStatus() {
+            const customerName = document.getElementById('exchangeCustomerName').value.trim();
+            const customerPhone = document.getElementById('exchangeCustomerPhone').value.trim();
+            const saveBtn = document.getElementById('exchangeSaveBtn');
+            
+            if (customerName && customerPhone && currentExchangeCalculation) {
+                saveBtn.disabled = false;
+            } else {
+                saveBtn.disabled = true;
+            }
+        }
+
+        // Add event listeners to exchange customer info fields
+        document.getElementById('exchangeCustomerName').addEventListener('input', checkExchangeSaveButtonStatus);
+        document.getElementById('exchangeCustomerPhone').addEventListener('input', checkExchangeSaveButtonStatus);
+
+        function saveExchangeToGoogleSheets() {
+            const customerName = document.getElementById('exchangeCustomerName').value.trim();
+            const customerPhone = document.getElementById('exchangeCustomerPhone').value.trim();
+            
+            if (!customerName || !customerPhone) {
+                alert('กรุณากรอกข้อมูลลูกค้าให้ครบ');
+                return;
+            }
+            
+            if (!currentExchangeCalculation) {
+                alert('กรุณาคำนวณการเปลี่ยนสินค้าก่อนบันทึก');
+                return;
+            }
+            
+            const saveBtn = document.getElementById('exchangeSaveBtn');
+            const originalText = saveBtn.innerHTML;
+            
+            // Show loading
+            saveBtn.innerHTML = '⏳ กำลังบันทึก...';
+            saveBtn.disabled = true;
+            
+            // Prepare data for Google Sheets
+            const data = {
+                timestamp: new Date().toLocaleString('th-TH'),
+                transactionType: 'การเปลี่ยนสินค้า',
+                branch: currentExchangeCalculation.branch,
+                customerName: customerName,
+                customerPhone: customerPhone,
+                oldProductType: currentExchangeCalculation.oldProductType,
+                oldOriginalPrice: currentExchangeCalculation.oldOriginalPrice || '',
+                oldGoldWeight: currentExchangeCalculation.oldGoldWeight || '',
+                oldGoldWarranty: currentExchangeCalculation.oldGoldWarranty === 'with' ? 'มีใบรับประกัน' : (currentExchangeCalculation.oldGoldWarranty === 'without' ? 'ไม่มีใบรับประกัน' : ''),
+                oldCondition: currentExchangeCalculation.oldCondition,
+                oldWarranty: currentExchangeCalculation.oldWarranty === 'yes' ? 'มี' : 'ไม่มี',
+                oldProductValue: currentExchangeCalculation.oldProductValue,
+                newProductPrice: currentExchangeCalculation.newProductPrice,
+                priceDifference: currentExchangeCalculation.priceDifference,
+                processingFee: currentExchangeCalculation.processingFee,
+                totalAmount: currentExchangeCalculation.totalAmount,
+                calculationDetails: currentExchangeCalculation.calculationSteps.join(' | ')
+            };
+            
+            // Check if Google Apps Script URL is configured
+            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE' || GOOGLE_SCRIPT_URL.trim() === '') {
+                setTimeout(() => {
+                    document.getElementById('exchangeErrorMessage').innerHTML = 
+                        `⚠️ กรุณาตั้งค่า Google Apps Script URL<br>
+                        <small>📋 วิธีตั้งค่า:<br>
+                        1. สร้าง Google Apps Script ใหม่<br>
+                        2. Deploy เป็น Web app<br>
+                        3. คัดลอก URL มาใส่ในโค้ด HTML<br>
+                        4. แทนที่ 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'</small>`;
+                    document.getElementById('exchangeErrorMessage').style.display = 'block';
+                    
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.disabled = false;
+                    
+                    setTimeout(() => {
+                        document.getElementById('exchangeErrorMessage').style.display = 'none';
+                    }, 5000);
+                }, 1000);
+                return;
+            }
+            
+            // Actual API call to Google Apps Script
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                // Show success message
+                document.getElementById('exchangeSuccessMessage').style.display = 'block';
+                
+                // Reset form
+                document.getElementById('exchangeCustomerName').value = '';
+                document.getElementById('exchangeCustomerPhone').value = '';
+                
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = true;
+                
+                // Hide success message after 3 seconds
+                setTimeout(() => {
+                    document.getElementById('exchangeSuccessMessage').style.display = 'none';
+                }, 3000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('exchangeErrorMessage').style.display = 'block';
+                
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+                
+                // Hide error message after 3 seconds
+                setTimeout(() => {
+                    document.getElementById('exchangeErrorMessage').style.display = 'none';
+                }, 3000);
+            });
+        }
+    </script>
+</body>
+</html>
